@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 // Extend the NodeJS global type to include our mongoose cache
 declare global {
   // eslint-disable-next-line no-var
-  var mongoose: {
+  var mongooseCache: {
     conn: mongoose.Connection | null;
     promise: Promise<mongoose.Connection> | null;
   };
@@ -23,10 +23,10 @@ if (!MONGODB_URI) {
  * in development. This prevents connections growing exponentially
  * during API Route usage.
  */
-let cached = global.mongoose;
+let cached = global.mongooseCache;
 
 if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+  cached = global.mongooseCache = { conn: null, promise: null };
 }
 
 /**
