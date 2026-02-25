@@ -109,7 +109,7 @@ EventSchema.index({ slug: 1 }, { unique: true });
  * Pre-save hook to generate URL-friendly slug and normalize date/time
  * Only regenerates slug if title has changed
  */
-EventSchema.pre('save', function (next) {
+EventSchema.pre('save', function () {
   // Generate slug from title if title is modified or slug doesn't exist
   if (this.isModified('title') || !this.slug) {
     this.slug = this.title
@@ -125,7 +125,7 @@ EventSchema.pre('save', function (next) {
   if (this.isModified('date')) {
     const dateObj = new Date(this.date);
     if (isNaN(dateObj.getTime())) {
-      return next(new Error('Invalid date format'));
+      throw new Error('Invalid date format');
     }
     this.date = dateObj.toISOString().split('T')[0];
   }
@@ -153,11 +153,9 @@ EventSchema.pre('save', function (next) {
         this.time = `${hours.toString().padStart(2, '0')}:${minutes}`;
       }
     } else {
-      return next(new Error('Invalid time format. Use HH:MM or HH:MM AM/PM'));
+      throw new Error('Invalid time format. Use HH:MM or HH:MM AM/PM');
     }
   }
-
-  next();
 });
 
 // Prevent model overwrite during hot reloads in development
