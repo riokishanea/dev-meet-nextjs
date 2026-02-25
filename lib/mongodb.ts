@@ -1,41 +1,42 @@
 import mongoose from 'mongoose';
 
-// Extend the NodeJS global type to include our mongoose cache
+type MongooseCache = {
+  conn: mongoose.Connection | null;
+  promise: Promise<mongoose.Connection> | null;
+};
+
 declare global {
   // eslint-disable-next-line no-var
-  var mongooseCache: {
-    conn: mongoose.Connection | null;
-    promise: Promise<mongoose.Connection> | null;
-  };
+  var mongooseCache: MongooseCache | undefined;
 }
 
-// Get MongoDB URI from environment variables
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
-  throw new Error(
-    'Please define the MONGODB_URI environment variable inside .env.local'
-  );
-}
+const globalForMongoose = globalThis as typeof globalThis & {
+  mongooseCache?: MongooseCache;
+};
 
 /**
  * Global is used here to maintain a cached connection across hot reloads
  * in development. This prevents connections growing exponentially
  * during API Route usage.
  */
-let cached = global.mongooseCache;
-
-if (!cached) {
-  cached = global.mongooseCache = { conn: null, promise: null };
-}
+const cached =
+  globalForMongoose.mongooseCache ??
+  (globalForMongoose.mongooseCache = { conn: null, promise: null });
 
 /**
  * Establishes a connection to MongoDB using Mongoose.
  * Caches the connection to prevent multiple connections in development.
- * 
+ *
  * @returns {Promise<mongoose.Connection>} The Mongoose connection instance
  */
 async function connectDB(): Promise<mongoose.Connection> {
+  const mongoUri = process.env.MONGODB_URI;
+  if (!mongoUri) {
+    throw new Error(
+      'Please define the MONGODB_URI environment variable inside .env.local'
+    );
+  }
+
   // Return cached connection if it exists
   if (cached.conn) {
     return cached.conn;
@@ -47,7 +48,7 @@ async function connectDB(): Promise<mongoose.Connection> {
       bufferCommands: false, // Disable buffering to fail fast if connection is not established
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+    cached.promise = mongoose.connect(mongoUri, opts).then((mongoose) => {
       return mongoose.connection;
     });
   }
