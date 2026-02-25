@@ -19,7 +19,7 @@ This is a **Next.js 16 App Router** project (React 19) for a developer events di
 
 - **`app/`** — App Router pages and layouts. Single-page app currently (root `page.tsx` is a client component). `layout.tsx` is a server component that provides fonts, the `Navbar`, and the `LightRays` WebGL background.
 - **`components/`** — React components. Most are `'use client'` components because they use PostHog event capture or browser APIs.
-- **`lib/constants.ts`** — Static event data (`EventItem[]` type). Currently the data source for all events (no database yet — the `database-models` branch is in progress).
+- **`lib/constants.ts`** — Static event data (`EventItem[]` type). Static fallback; live data is now served via Mongoose models in `database/`.
 - **`lib/utils.ts`** — Tailwind utility (`cn`) from shadcn/ui.
 
 ### Styling
